@@ -1,0 +1,515 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#e8e2d2" />
+    <title>Drill Angle</title>
+    <style>
+      :root {
+        --bg: #e8e2d2;
+        --ink: #1c1a14;
+        --muted: #5c594e;
+        --card: #f7f4ea;
+        --line: #c9c2ae;
+        --accent: #2f5d28;
+        --warn: #8a4b12;
+        --warn-bg: #f3e1c8;
+        --shadow: 0 1px 0 rgba(28, 26, 20, 0.06);
+        font-family: "Segoe UI", system-ui, sans-serif;
+        color: var(--ink);
+        background: var(--bg);
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; background: var(--bg); }
+      button, input { font: inherit; }
+      .app { max-width: 52rem; margin: 0 auto; padding: 1rem 1rem 2.5rem; }
+      .top { display: flex; flex-direction: column; gap: 0.75rem; margin-bottom: 1.1rem; }
+      h1 { font-size: 1.35rem; font-weight: 700; margin: 0; }
+      .how {
+        margin: 0;
+        padding: 0.7rem 0.85rem;
+        background: #fffdf7;
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        font-size: 0.95rem;
+        line-height: 1.45;
+      }
+      .lead { margin: 0; color: var(--muted); font-size: 0.95rem; line-height: 1.4; }
+      .pills { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+      .pill {
+        border: 1px solid var(--line);
+        background: var(--card);
+        color: var(--ink);
+        border-radius: 999px;
+        padding: 0.45rem 0.85rem;
+        min-height: 2.5rem;
+        cursor: pointer;
+      }
+      .pill.on { background: var(--accent); border-color: var(--accent); color: #f7f4ea; }
+      .grid { display: grid; gap: 0.75rem; }
+      @media (min-width: 640px) { .grid.two { grid-template-columns: 1fr 1fr; } }
+      .card {
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 0.9rem 1rem 1rem;
+        box-shadow: var(--shadow);
+      }
+      .card-head { display: flex; justify-content: space-between; align-items: baseline; gap: 0.5rem; margin-bottom: 0.75rem; }
+      h2 { font-size: 0.95rem; margin: 0; font-weight: 700; }
+      .hint { color: var(--muted); font-size: 0.8rem; }
+      .field { display: flex; flex-direction: column; gap: 0.25rem; margin-bottom: 0.7rem; }
+      .field:last-child { margin-bottom: 0; }
+      .field label { font-weight: 600; font-size: 0.92rem; }
+      .field input {
+        width: 100%; min-height: 3rem; padding: 0.55rem 0.7rem;
+        border: 1px solid var(--line); border-radius: 8px; background: #fffdf7;
+        color: var(--ink); font-size: 1.15rem;
+      }
+      .result-angle { font-size: 2rem; font-weight: 750; color: var(--accent); line-height: 1.15; margin: 0.15rem 0 0.85rem; }
+      .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem 1rem; }
+      .stat dt { font-size: 0.75rem; color: var(--muted); margin: 0; }
+      .stat dd { margin: 0.1rem 0 0; font-size: 1.15rem; font-weight: 650; }
+      .note { margin: 0.9rem 0 0; color: var(--muted); font-size: 0.9rem; line-height: 1.4; }
+      .callout { border-radius: 10px; padding: 0.75rem 0.9rem; margin-top: 0.75rem; background: var(--warn-bg); color: var(--warn); font-size: 0.92rem; line-height: 1.35; }
+      .row-btns { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+      .btn { min-height: 2.5rem; padding: 0.4rem 0.8rem; border-radius: 8px; border: 1px solid var(--line); background: #fffdf7; cursor: pointer; }
+      .btn.ghost { background: transparent; }
+      .btn:disabled { opacity: 0.45; }
+      .arc-row { display: grid; grid-template-columns: 1fr 1fr auto; gap: 0.5rem; align-items: end; margin-bottom: 0.65rem; }
+      .side-chart {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+        align-items: start;
+      }
+      @media (min-width: 640px) {
+        .side-chart {
+          grid-template-columns: minmax(0, 1fr) minmax(220px, 52%);
+        }
+      }
+      .chart-wrap svg { width: 100%; height: auto; display: block; }
+      .chart-caption { margin: 0.4rem 0 0; font-size: 0.8rem; color: var(--muted); }
+      .stack { display: flex; flex-direction: column; gap: 0.85rem; }
+      .hidden { display: none; }
+    </style>
+  </head>
+  <body>
+    <div class="app">
+      <header class="top">
+        <h1>Drill Angle</h1>
+        <p class="how">
+          1) Впишите длины и высоты шпуров a и b.<br />
+          2) Выберите, как считать провис.<br />
+          3) Угол снизу — его ставите на шпур <b>b</b>, чтобы попасть в <b>a</b>.
+        </p>
+        <div class="pills">
+          <button type="button" class="pill on" id="tab-calc">Расчёт</button>
+          <button type="button" class="pill" id="tab-arc">Дуга</button>
+        </div>
+      </header>
+
+      <div id="page-calc" class="stack">
+        <div class="grid two">
+          <section class="card">
+            <div class="card-head"><h2>Шпур a</h2><span class="hint">цель, обычно 0°</span></div>
+            <div class="field">
+              <label for="a">Длина a, м</label>
+              <input id="a" inputmode="decimal" autocomplete="off" value="12" />
+            </div>
+            <div class="field">
+              <label for="ha">Высота ha, см</label>
+              <span class="hint">устье от лазера; ниже горизонта — минус</span>
+              <input id="ha" inputmode="decimal" autocomplete="off" value="20" />
+            </div>
+          </section>
+          <section class="card">
+            <div class="card-head"><h2>Шпур b</h2><span class="hint">этот бурим, в a</span></div>
+            <div class="field">
+              <label for="b">Длина b, м</label>
+              <input id="b" inputmode="decimal" autocomplete="off" value="8" />
+            </div>
+            <div class="field">
+              <label for="hb">Высота hb, см</label>
+              <span class="hint">устье от того же горизонта</span>
+              <input id="hb" inputmode="decimal" autocomplete="off" value="5" />
+            </div>
+          </section>
+        </div>
+
+        <section class="card">
+          <div class="card-head"><h2>Как считать</h2></div>
+          <div class="pills">
+            <button type="button" class="pill on" data-mode="length">По длине a</button>
+            <button type="button" class="pill" data-mode="eye">По забойке</button>
+            <button type="button" class="pill" data-mode="ideal">Идеальный</button>
+          </div>
+          <p class="note" id="mode-hint"></p>
+          <div id="eye-box" class="hidden" style="margin-top:0.75rem">
+            <p class="lead">Смотрю в шпур a.</p>
+            <div class="pills">
+              <button type="button" class="pill on" data-eye="full">Вижу забойку → 0 см</button>
+              <button type="button" class="pill" data-eye="top">Верх забойки → a вниз 5 см</button>
+              <button type="button" class="pill" data-eye="bottom">Низ забойки → a вверх 5 см</button>
+              <button type="button" class="pill" data-eye="hidden">Не вижу забойку → больше 10 см</button>
+            </div>
+            <div id="eye-gone-box" class="hidden" style="margin-top:0.7rem">
+              <p class="lead">Куда ушёл шпур a?</p>
+              <div class="pills">
+                <button type="button" class="pill on" data-gone="down">Вниз</button>
+                <button type="button" class="pill" data-gone="up">Вверх</button>
+              </div>
+            </div>
+            <div id="eye-cm-box" class="field hidden" style="margin-top:0.7rem">
+              <label for="eyeCm">Отклонение, см</label>
+              <span class="hint">от 10 и больше</span>
+              <input id="eyeCm" inputmode="decimal" autocomplete="off" value="12" />
+            </div>
+          </div>
+        </section>
+
+        <section class="card">
+          <div class="side-chart">
+            <div>
+              <div class="card-head"><h2>На буровой</h2></div>
+              <p class="result-angle" id="angle">—</p>
+              <dl class="stats">
+                <div class="stat"><dt>на 1 м шпура b</dt><dd id="cpm">—</dd></div>
+                <div class="stat"><dt id="h-label">h = ha − hb − sa + sb</dt><dd id="h">—</dd></div>
+                <div class="stat"><dt id="s-label">уход a</dt><dd id="s">—</dd></div>
+                <div class="stat"><dt>провис b</dt><dd id="sb">—</dd></div>
+              </dl>
+              <p class="note" id="note"></p>
+              <div class="callout hidden" id="warn"></div>
+            </div>
+            <div>
+              <div class="card-head"><h2>Провис</h2></div>
+              <div class="chart-wrap" id="chart-calc"></div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <div id="page-arc" class="stack hidden">
+        <p class="lead">Одна дуга на шпуры a и b: провис по длине каждого. До первой точки — 0.</p>
+        <section class="card">
+          <div class="card-head">
+            <h2>Замеры</h2>
+            <div class="row-btns">
+              <button type="button" class="btn" id="add-point">Точка</button>
+              <button type="button" class="btn ghost" id="reset-arc">Сбросить</button>
+            </div>
+          </div>
+          <div class="side-chart">
+            <div>
+              <div id="arc-rows"></div>
+            </div>
+            <div class="chart-wrap" id="chart"></div>
+          </div>
+        </section>
+      </div>
+    </div>
+
+    <script>
+      const ARC_KEY = "pifagoor-arc-v2";
+      const DEFAULT_ARC = [
+        { id: "p8", m: "8", cm: "0" },
+        { id: "p12", m: "12", cm: "6" },
+        { id: "p14", m: "14", cm: "10" },
+        { id: "p16", m: "16", cm: "15" },
+      ];
+
+      const state = {
+        tab: "calc",
+        mode: "length",
+        eye: "full",
+        gone: "down",
+        arc: loadArc(),
+      };
+
+      function parseNum(raw) {
+        const t = String(raw).trim().replace(",", ".");
+        if (t === "" || t === "-" || t === "." || t === "-.") return null;
+        const n = Number(t);
+        return Number.isFinite(n) ? n : null;
+      }
+
+      function loadArc() {
+        try {
+          const raw = localStorage.getItem(ARC_KEY);
+          if (!raw) return DEFAULT_ARC.map((p) => ({ ...p }));
+          const parsed = JSON.parse(raw);
+          if (!Array.isArray(parsed) || parsed.length < 2) return DEFAULT_ARC.map((p) => ({ ...p }));
+          return parsed;
+        } catch {
+          return DEFAULT_ARC.map((p) => ({ ...p }));
+        }
+      }
+
+      function saveArc() {
+        localStorage.setItem(ARC_KEY, JSON.stringify(state.arc));
+      }
+
+      function numericPoints(points) {
+        return points
+          .map((p) => ({ m: parseNum(p.m), cm: parseNum(p.cm) }))
+          .filter((p) => p.m !== null && p.cm !== null && p.m >= 0)
+          .sort((a, b) => a.m - b.m);
+      }
+
+      function sagAt(lengthM, pts) {
+        if (pts.length === 0) return { s: 0, note: "дуга без точек", beyond: false };
+        if (lengthM < pts[0].m) {
+          return { s: 0, note: "по длине: до " + pts[0].m + " м провис 0", beyond: false };
+        }
+        for (let i = 0; i < pts.length - 1; i++) {
+          const a = pts[i], b = pts[i + 1];
+          if (b.m === a.m) continue;
+          if (lengthM <= b.m) {
+            const t = (lengthM - a.m) / (b.m - a.m);
+            return { s: a.cm + t * (b.cm - a.cm), note: "по длине: между " + a.m + " и " + b.m + " м", beyond: false };
+          }
+        }
+        const last = pts[pts.length - 1];
+        return { s: last.cm, note: "по длине: дальше " + last.m + " м — последняя точка " + last.cm + " см", beyond: true };
+      }
+
+      function sagForMode(mode, lengthA, pts, eye, eyeCm, gone) {
+        if (mode === "ideal") return { s: 0, note: "идеальный: без провиса и поправок", beyond: false, ready: true };
+        if (mode === "length") {
+          if (lengthA === null || pts.length < 2) return { s: 0, note: "нужна длина a и дуга", beyond: false, ready: false };
+          return Object.assign({ ready: true }, sagAt(lengthA, pts));
+        }
+        if (eye === "full") return { s: 0, note: "глазом: вижу забойку, отклонения нет", beyond: false, ready: true };
+        if (eye === "top") return { s: 5, note: "глазом: верх забойки — a ушёл вниз 5 см", beyond: false, ready: true };
+        if (eye === "bottom") return { s: -5, note: "глазом: низ забойки — a ушёл вверх 5 см", beyond: false, ready: true };
+        if (eyeCm === null) return { s: 0, note: "глазом: забойку не вижу, введите см и куда ушёл", beyond: false, ready: false };
+        const s = gone === "up" ? -eyeCm : eyeCm;
+        const dir = gone === "up" ? "вверх" : "вниз";
+        return { s: s, note: "глазом: забойку не вижу, a ушёл " + dir + " на " + eyeCm + " см", beyond: false, ready: true };
+      }
+
+      function formatSagCm(s) {
+        if (Math.abs(s) < 0.05) return "0 см";
+        return Math.abs(s).toFixed(1) + " см " + (s > 0 ? "вниз" : "вверх");
+      }
+
+      function formatSigned(n, digits) {
+        const t = n.toFixed(digits);
+        return n > 0 ? "+" + t : t;
+      }
+
+      function compute() {
+        const aM = parseNum($("a").value);
+        const haCm = parseNum($("ha").value);
+        const bM = parseNum($("b").value);
+        const hbCm = parseNum($("hb").value);
+        const eyeCm = parseNum($("eyeCm").value);
+        const pts = numericPoints(state.arc);
+        const sag = sagForMode(state.mode, aM, pts, state.eye, eyeCm, state.gone);
+        let sb = 0, beyondB = false;
+        if (state.mode !== "ideal" && bM !== null && pts.length >= 2) {
+          const hitB = sagAt(bM, pts);
+          sb = hitB.s;
+          beyondB = hitB.beyond;
+        }
+        const lastM = pts.length ? pts[pts.length - 1].m : null;
+        const ok = sag.ready && aM !== null && haCm !== null && bM !== null && hbCm !== null && aM >= 0 && bM > 0;
+        if (!ok) {
+          return { ok: false, s: sag.s, sb: sb, h: null, alphaDeg: null, cmPerM: null, dir: null, note: sag.note, beyond: sag.beyond, beyondB: beyondB, lastM: lastM };
+        }
+        const h = haCm - hbCm - sag.s + sb;
+        const alphaDeg = (Math.atan(h / 100 / bM) * 180) / Math.PI;
+        const cmPerM = h / bM;
+        const dir = alphaDeg > 0.05 ? "вверх" : alphaDeg < -0.05 ? "вниз" : "горизонт";
+        const bNote = sb > 0.05 ? " Провис b " + sb.toFixed(1) + " см вниз — целимся выше." : "";
+        return { ok: true, s: sag.s, sb: sb, h: h, alphaDeg: alphaDeg, cmPerM: cmPerM, dir: dir, note: sag.note + bNote, beyond: sag.beyond, beyondB: beyondB, lastM: lastM, haCm: haCm, hbCm: hbCm };
+      }
+
+      function $(id) { return document.getElementById(id); }
+
+      function setPressed(group, attr, value) {
+        document.querySelectorAll(group).forEach((el) => {
+          el.classList.toggle("on", el.getAttribute(attr) === value);
+        });
+      }
+
+      function renderChart() {
+        const html = chartSvg();
+        const main = $("chart");
+        const calc = $("chart-calc");
+        if (main) main.innerHTML = html;
+        if (calc) calc.innerHTML = html;
+      }
+
+      function chartSvg() {
+        const pts = numericPoints(state.arc);
+        if (pts.length < 2) return "";
+        const from = Math.floor(pts[0].m);
+        const to = Math.ceil(pts[pts.length - 1].m);
+        const xs = [], ys = [];
+        for (let x = from; x <= to; x++) { xs.push(x); ys.push(sagAt(x, pts).s); }
+        const w = 320, padL = 18, padR = 50, padT = 16, padB = 32, plotH = 119;
+        const h = padT + plotH + padB;
+        const maxY = Math.max(15, Math.ceil(Math.max.apply(null, ys)));
+        const xTicks = [];
+        for (let x = from + (from % 2 === 0 ? 0 : 1); x <= to; x += 2) xTicks.push(x);
+        if (xTicks.length && xTicks[xTicks.length - 1] !== to && to % 2 === 0) xTicks.push(to);
+        const yTicks = [];
+        for (let y = 0; y <= maxY; y += 5) yTicks.push(y);
+        const x0 = xs[0], x1 = xs[xs.length - 1] || x0 + 1;
+        const sx = (x) => padL + ((x - x0) / (x1 - x0 || 1)) * (w - padL - padR);
+        const sy = (y) => padT + (y / maxY) * plotH;
+        const d = xs.map((x, i) => (i === 0 ? "M" : "L") + " " + sx(x) + " " + sy(ys[i])).join(" ");
+        const grid = xTicks.map(function (x) {
+          return '<line x1="' + sx(x) + '" y1="' + padT + '" x2="' + sx(x) + '" y2="' + (h - padB) + '" stroke="#ddd6c4"></line>';
+        }).join("") + yTicks.map(function (y) {
+          return '<line x1="' + padL + '" y1="' + sy(y) + '" x2="' + (w - padR) + '" y2="' + sy(y) + '" stroke="#ddd6c4"></line>';
+        }).join("");
+        const xLabs = xTicks.map(function (x) {
+          return '<text x="' + sx(x) + '" y="' + (h - 12) + '" text-anchor="middle" font-size="14" font-weight="700" fill="#1c1a14">' + x + "м</text>";
+        }).join("");
+        const yLabs = yTicks.map(function (y) {
+          return '<text x="' + (w - padR + 5) + '" y="' + (sy(y) + 4) + '" font-size="14" font-weight="700" fill="#1c1a14">' + y + "см</text>";
+        }).join("");
+        const dots = pts.map((p) => '<circle cx="' + sx(p.m) + '" cy="' + sy(p.cm) + '" r="3.5" fill="#2f5d28"></circle>').join("");
+        const aM = parseNum($("a").value);
+        const bM = parseNum($("b").value);
+        function markLen(len, color) {
+          if (len === null || len < x0 || len > x1) return "";
+          const sNow = sagAt(len, pts).s;
+          return '<line x1="' + sx(len) + '" y1="' + padT + '" x2="' + sx(len) + '" y2="' + sy(sNow) + '" stroke="' + color + '" stroke-dasharray="3 3"></line>' +
+            '<circle cx="' + sx(len) + '" cy="' + sy(sNow) + '" r="5" fill="' + color + '"></circle>';
+        }
+        const mark = markLen(aM, "#8a4b12") + markLen(bM, "#2f5d28");
+        return (
+          '<svg viewBox="0 0 ' + w + " " + h + '" role="img" aria-label="Дуга провиса вниз">' +
+          grid +
+          '<line x1="' + padL + '" y1="' + padT + '" x2="' + (w - padR) + '" y2="' + padT + '" stroke="#c9c2ae"></line>' +
+          '<line x1="' + padL + '" y1="' + padT + '" x2="' + padL + '" y2="' + (h - padB) + '" stroke="#c9c2ae"></line>' +
+          '<line x1="' + padL + '" y1="' + (h - padB) + '" x2="' + (w - padR) + '" y2="' + (h - padB) + '" stroke="#c9c2ae"></line>' +
+          '<path d="' + d + '" fill="none" stroke="#5c594e" stroke-width="2"></path>' + dots + mark + xLabs + yLabs +
+          "</svg>" +
+          '<p class="chart-caption">Вправо — метры. Вниз — см. Коричневая точка — a, зелёная — b.</p>'
+        );
+      }
+
+      function renderArcRows() {
+        const box = $("arc-rows");
+        box.innerHTML = state.arc.map((p, i) => (
+          '<div class="arc-row" data-id="' + p.id + '">' +
+            '<div class="field"><label>' + (i === 0 ? "Длина a, м" : "") + '</label>' +
+            '<input data-k="m" inputmode="decimal" value="' + p.m + '"></div>' +
+            '<div class="field"><label>' + (i === 0 ? "Провис s, см" : "") + '</label>' +
+            '<input data-k="cm" inputmode="decimal" value="' + p.cm + '"></div>' +
+            '<button type="button" class="btn ghost" data-del="' + p.id + '"' + (state.arc.length <= 2 ? " disabled" : "") + '>Убрать</button>' +
+          "</div>"
+        )).join("");
+        box.querySelectorAll("input").forEach((inp) => {
+          inp.addEventListener("input", () => {
+            const id = inp.closest(".arc-row").getAttribute("data-id");
+            const k = inp.getAttribute("data-k");
+            const row = state.arc.find((x) => x.id === id);
+            if (row) row[k] = inp.value;
+            saveArc();
+            renderChart();
+            renderResult();
+          });
+        });
+        box.querySelectorAll("[data-del]").forEach((btn) => {
+          btn.addEventListener("click", () => {
+            if (state.arc.length <= 2) return;
+            state.arc = state.arc.filter((x) => x.id !== btn.getAttribute("data-del"));
+            saveArc();
+            renderArcRows();
+            renderChart();
+            renderResult();
+          });
+        });
+        renderChart();
+      }
+
+      function renderResult() {
+        const r = compute();
+        $("mode-hint").textContent =
+          state.mode === "length" ? "Провис a и b с одной дуги. Из‑за провиса b целимся выше."
+          : state.mode === "ideal" ? "Без провиса a и b. Только h = ha − hb."
+          : "Уход a — глазом. Провис b — по дуге длины b, целимся выше.";
+        $("eye-box").classList.toggle("hidden", state.mode !== "eye");
+        const hiddenEye = state.mode === "eye" && state.eye === "hidden";
+        $("eye-cm-box").classList.toggle("hidden", !hiddenEye);
+        $("eye-gone-box").classList.toggle("hidden", !hiddenEye);
+        $("h-label").textContent = state.mode === "ideal" ? "h = ha − hb" : "h = ha − hb − sa + sb";
+        $("s-label").textContent = state.mode === "eye" ? "уход a" : "провис a";
+        $("angle").textContent = r.ok ? formatSigned(r.alphaDeg, 1) + "° " + r.dir : "—";
+        $("cpm").textContent = r.ok ? formatSigned(r.cmPerM, 1) + " см" : "—";
+        $("h").textContent = r.ok ? r.h.toFixed(1) + " см" : "—";
+        $("s").textContent = formatSagCm(r.s);
+        $("sb").textContent = formatSagCm(r.sb);
+        $("note").textContent = r.ok
+          ? r.note + " h = " + r.haCm + " − " + r.hbCm + " − " + r.s.toFixed(1) + " + " + r.sb.toFixed(1) + " = " + r.h.toFixed(1) + " см. α = arctg(h / b)."
+          : "Нужны a, ha, b, hb и один из трёх расчётов.";
+        const warn = $("warn");
+        let msg = "";
+        if (state.mode !== "ideal" && (r.beyond || r.beyondB) && r.lastM !== null) {
+          msg = "Длина дальше последней точки дуги " + r.lastM + " м. Добавьте замер на вкладке «Дуга».";
+        }
+        if (state.mode === "eye" && state.eye === "hidden") {
+          const n = parseNum($("eyeCm").value);
+          if (n !== null && n < 10) msg = "Если забойки не видно, по правилу отклонение больше 10 см.";
+        }
+        warn.textContent = msg;
+        warn.classList.toggle("hidden", !msg);
+        renderChart();
+      }
+
+      function showTab(tab) {
+        state.tab = tab;
+        $("tab-calc").classList.toggle("on", tab === "calc");
+        $("tab-arc").classList.toggle("on", tab === "arc");
+        $("page-calc").classList.toggle("hidden", tab !== "calc");
+        $("page-arc").classList.toggle("hidden", tab !== "arc");
+        if (tab === "arc") renderArcRows();
+      }
+
+      $("tab-calc").addEventListener("click", () => showTab("calc"));
+      $("tab-arc").addEventListener("click", () => showTab("arc"));
+      ["a", "ha", "b", "hb", "eyeCm"].forEach((id) => $(id).addEventListener("input", renderResult));
+      document.querySelectorAll("[data-mode]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          state.mode = btn.getAttribute("data-mode");
+          document.querySelectorAll("[data-mode]").forEach((el) => el.classList.toggle("on", el === btn));
+          renderResult();
+        });
+      });
+      document.querySelectorAll("[data-eye]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          state.eye = btn.getAttribute("data-eye");
+          document.querySelectorAll("[data-eye]").forEach((el) => el.classList.toggle("on", el === btn));
+          renderResult();
+        });
+      });
+      document.querySelectorAll("[data-gone]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          state.gone = btn.getAttribute("data-gone");
+          document.querySelectorAll("[data-gone]").forEach((el) => el.classList.toggle("on", el === btn));
+          renderResult();
+        });
+      });
+      $("add-point").addEventListener("click", () => {
+        state.arc.push({ id: "p" + Date.now(), m: "", cm: "" });
+        saveArc();
+        renderArcRows();
+      });
+      $("reset-arc").addEventListener("click", () => {
+        state.arc = DEFAULT_ARC.map((p) => ({ ...p }));
+        saveArc();
+        renderArcRows();
+        renderResult();
+      });
+
+      renderResult();
+    </script>
+  </body>
+</html>
