@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <meta name="theme-color" content="#e8e2d2" />
+    <meta name="theme-color" content="#ffffff" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-title" content="DMM" />
@@ -11,15 +11,15 @@
     <title>Driller Machine Master</title>
     <style>
       :root {
-        --bg: #e8e2d2;
-        --ink: #1c1a14;
-        --muted: #5c594e;
-        --card: #f7f4ea;
-        --line: #c9c2ae;
-        --accent: #2f5d28;
-        --warn: #8a4b12;
-        --warn-bg: #f3e1c8;
-        --shadow: 0 1px 0 rgba(28, 26, 20, 0.06);
+        --bg: #d6d2c4;
+        --ink: #0a0a0a;
+        --muted: #222222;
+        --card: #ffffff;
+        --line: #111111;
+        --accent: #0b3d18;
+        --warn: #5c2200;
+        --warn-bg: #ffe08a;
+        --shadow: none;
         font-family: "Segoe UI", system-ui, sans-serif;
         color: var(--ink);
         background: var(--bg);
@@ -29,58 +29,60 @@
       button, input { font: inherit; }
       .app { max-width: 52rem; margin: 0 auto; padding: 1rem 1rem 2.5rem; }
       .top { display: flex; flex-direction: column; gap: 0.75rem; margin-bottom: 1.1rem; }
-      h1 { font-size: 1.35rem; font-weight: 700; margin: 0; }
+      h1 { font-size: 1.35rem; font-weight: 800; margin: 0; }
       .how {
         margin: 0;
         padding: 0.7rem 0.85rem;
-        background: #fffdf7;
-        border: 1px solid var(--line);
+        background: #ffffff;
+        border: 2px solid var(--line);
         border-radius: 10px;
         font-size: 0.95rem;
         line-height: 1.45;
+        font-weight: 600;
       }
-      .lead { margin: 0; color: var(--muted); font-size: 0.95rem; line-height: 1.4; }
+      .lead { margin: 0; color: var(--muted); font-size: 0.95rem; line-height: 1.4; font-weight: 600; }
       .pills { display: flex; flex-wrap: wrap; gap: 0.4rem; }
       .pill {
-        border: 1px solid var(--line);
-        background: var(--card);
+        border: 2px solid var(--line);
+        background: #ffffff;
         color: var(--ink);
         border-radius: 999px;
         padding: 0.45rem 0.85rem;
         min-height: 2.5rem;
+        font-weight: 700;
         cursor: pointer;
       }
-      .pill.on { background: var(--accent); border-color: var(--accent); color: #f7f4ea; }
+      .pill.on { background: var(--accent); border-color: var(--line); color: #ffffff; }
       .grid { display: grid; gap: 0.75rem; }
       @media (min-width: 640px) { .grid.two { grid-template-columns: 1fr 1fr; } }
       .card {
         background: var(--card);
-        border: 1px solid var(--line);
+        border: 2px solid var(--line);
         border-radius: 12px;
         padding: 0.9rem 1rem 1rem;
         box-shadow: var(--shadow);
       }
       .card-head { display: flex; justify-content: space-between; align-items: baseline; gap: 0.5rem; margin-bottom: 0.75rem; }
-      h2 { font-size: 0.95rem; margin: 0; font-weight: 700; }
-      .hint { color: var(--muted); font-size: 0.8rem; }
+      h2 { font-size: 0.95rem; margin: 0; font-weight: 800; }
+      .hint { color: var(--muted); font-size: 0.85rem; font-weight: 600; }
       .field { display: flex; flex-direction: column; gap: 0.25rem; margin-bottom: 0.7rem; }
       .field:last-child { margin-bottom: 0; }
-      .field label { font-weight: 600; font-size: 0.92rem; }
+      .field label { font-weight: 800; font-size: 0.95rem; }
       .field input {
         width: 100%; min-height: 3rem; padding: 0.55rem 0.7rem;
-        border: 1px solid var(--line); border-radius: 8px; background: #fffdf7;
-        color: var(--ink); font-size: 1.15rem;
+        border: 2px solid var(--line); border-radius: 8px; background: #ffffff;
+        color: var(--ink); font-size: 1.2rem; font-weight: 700;
       }
-      .result-angle { font-size: 2rem; font-weight: 750; color: var(--accent); line-height: 1.15; margin: 0.15rem 0 0.85rem; }
+      .result-angle { font-size: 2rem; font-weight: 800; color: var(--accent); line-height: 1.15; margin: 0.15rem 0 0.85rem; }
       .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem 1rem; }
-      .stat dt { font-size: 0.75rem; color: var(--muted); margin: 0; }
-      .stat dd { margin: 0.1rem 0 0; font-size: 1.15rem; font-weight: 650; }
-      .note { margin: 0.9rem 0 0; color: var(--muted); font-size: 0.9rem; line-height: 1.4; }
-      .callout { border-radius: 10px; padding: 0.75rem 0.9rem; margin-top: 0.75rem; background: var(--warn-bg); color: var(--warn); font-size: 0.92rem; line-height: 1.35; }
+      .stat dt { font-size: 0.8rem; color: var(--muted); margin: 0; font-weight: 700; }
+      .stat dd { margin: 0.1rem 0 0; font-size: 1.2rem; font-weight: 800; }
+      .note { margin: 0.9rem 0 0; color: var(--muted); font-size: 0.95rem; line-height: 1.4; font-weight: 600; }
+      .callout { border-radius: 10px; padding: 0.75rem 0.9rem; margin-top: 0.75rem; background: var(--warn-bg); color: var(--warn); border: 2px solid var(--warn); font-size: 0.95rem; line-height: 1.35; font-weight: 700; }
       .row-btns { display: flex; flex-wrap: wrap; gap: 0.4rem; }
-      .btn { min-height: 2.5rem; padding: 0.4rem 0.8rem; border-radius: 8px; border: 1px solid var(--line); background: #fffdf7; cursor: pointer; }
-      .btn.ghost { background: transparent; }
-      .btn:disabled { opacity: 0.45; }
+      .btn { min-height: 2.5rem; padding: 0.4rem 0.8rem; border-radius: 8px; border: 2px solid var(--line); background: #ffffff; color: var(--ink); cursor: pointer; font-weight: 700; }
+      .btn.ghost { background: #ffffff; }
+      .btn:disabled { opacity: 0.4; }
       .arc-row { display: grid; grid-template-columns: 1fr 1fr auto; gap: 0.5rem; align-items: end; margin-bottom: 0.65rem; }
       .side-chart {
         display: grid;
@@ -94,15 +96,16 @@
         }
       }
       .chart-wrap svg { width: 100%; height: auto; display: block; }
-      .chart-caption { margin: 0.4rem 0 0; font-size: 0.8rem; color: var(--muted); }
+      .chart-caption { margin: 0.4rem 0 0; font-size: 0.85rem; color: var(--ink); font-weight: 700; }
       .stack { display: flex; flex-direction: column; gap: 0.85rem; }
       .hidden { display: none; }
       .copy {
         margin: 1.6rem 0 0;
         text-align: center;
-        font-size: 0.78rem;
+        font-size: 0.85rem;
         letter-spacing: 0.08em;
-        color: var(--muted);
+        color: var(--ink);
+        font-weight: 800;
       }
     </style>
   </head>
@@ -375,17 +378,17 @@
         const sy = (y) => padT + (y / maxY) * plotH;
         const d = xs.map((x, i) => (i === 0 ? "M" : "L") + " " + sx(x) + " " + sy(ys[i])).join(" ");
         const grid = xTicks.map(function (x) {
-          return '<line x1="' + sx(x) + '" y1="' + padT + '" x2="' + sx(x) + '" y2="' + (h - padB) + '" stroke="#ddd6c4"></line>';
+          return '<line x1="' + sx(x) + '" y1="' + padT + '" x2="' + sx(x) + '" y2="' + (h - padB) + '" stroke="#888888"></line>';
         }).join("") + yTicks.map(function (y) {
-          return '<line x1="' + padL + '" y1="' + sy(y) + '" x2="' + (w - padR) + '" y2="' + sy(y) + '" stroke="#ddd6c4"></line>';
+          return '<line x1="' + padL + '" y1="' + sy(y) + '" x2="' + (w - padR) + '" y2="' + sy(y) + '" stroke="#888888"></line>';
         }).join("");
         const xLabs = xTicks.map(function (x) {
-          return '<text x="' + sx(x) + '" y="' + (h - 12) + '" text-anchor="middle" font-size="14" font-weight="700" fill="#1c1a14">' + x + "м</text>";
+          return '<text x="' + sx(x) + '" y="' + (h - 12) + '" text-anchor="middle" font-size="15" font-weight="800" fill="#000000">' + x + "м</text>";
         }).join("");
         const yLabs = yTicks.map(function (y) {
-          return '<text x="' + (w - padR + 5) + '" y="' + (sy(y) + 4) + '" font-size="14" font-weight="700" fill="#1c1a14">' + y + "см</text>";
+          return '<text x="' + (w - padR + 5) + '" y="' + (sy(y) + 4) + '" font-size="15" font-weight="800" fill="#000000">' + y + "см</text>";
         }).join("");
-        const dots = pts.map((p) => '<circle cx="' + sx(p.m) + '" cy="' + sy(p.cm) + '" r="3.5" fill="#2f5d28"></circle>').join("");
+        const dots = pts.map((p) => '<circle cx="' + sx(p.m) + '" cy="' + sy(p.cm) + '" r="4" fill="#0b3d18"></circle>').join("");
         const aM = parseNum($("a").value);
         const bM = parseNum($("b").value);
         function markLen(len, color) {
@@ -394,14 +397,14 @@
           return '<line x1="' + sx(len) + '" y1="' + padT + '" x2="' + sx(len) + '" y2="' + sy(sNow) + '" stroke="' + color + '" stroke-dasharray="3 3"></line>' +
             '<circle cx="' + sx(len) + '" cy="' + sy(sNow) + '" r="5" fill="' + color + '"></circle>';
         }
-        const mark = markLen(aM, "#8a4b12") + markLen(bM, "#2f5d28");
+        const mark = markLen(aM, "#7a2e00") + markLen(bM, "#0b3d18");
         return (
           '<svg viewBox="0 0 ' + w + " " + h + '" role="img" aria-label="Дуга провиса вниз">' +
           grid +
-          '<line x1="' + padL + '" y1="' + padT + '" x2="' + (w - padR) + '" y2="' + padT + '" stroke="#c9c2ae"></line>' +
-          '<line x1="' + padL + '" y1="' + padT + '" x2="' + padL + '" y2="' + (h - padB) + '" stroke="#c9c2ae"></line>' +
-          '<line x1="' + padL + '" y1="' + (h - padB) + '" x2="' + (w - padR) + '" y2="' + (h - padB) + '" stroke="#c9c2ae"></line>' +
-          '<path d="' + d + '" fill="none" stroke="#5c594e" stroke-width="2"></path>' + dots + mark + xLabs + yLabs +
+          '<line x1="' + padL + '" y1="' + padT + '" x2="' + (w - padR) + '" y2="' + padT + '" stroke="#111111" stroke-width="2"></line>' +
+          '<line x1="' + padL + '" y1="' + padT + '" x2="' + padL + '" y2="' + (h - padB) + '" stroke="#111111" stroke-width="2"></line>' +
+          '<line x1="' + padL + '" y1="' + (h - padB) + '" x2="' + (w - padR) + '" y2="' + (h - padB) + '" stroke="#111111" stroke-width="2"></line>' +
+          '<path d="' + d + '" fill="none" stroke="#111111" stroke-width="3"></path>' + dots + mark + xLabs + yLabs +
           "</svg>" +
           '<p class="chart-caption">Вправо — метры. Вниз — см. Коричневая точка — a, зелёная — b.</p>'
         );
