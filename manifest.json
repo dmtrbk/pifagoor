@@ -1,0 +1,11 @@
+{
+  "name": "Driller Machine Master",
+  "short_name": "DMM",
+  "description": "Drill angle calculator",
+  "start_url": "./drill-angle-pro.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#e8e2d2",
+  "theme_color": "#2f5d28",
+  "lang": "ru"
+}

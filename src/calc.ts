@@ -15,9 +15,9 @@ export type GoneDir = "down" | "up";
 
 export const DEFAULT_ARC: SagPoint[] = [
   { id: "p8", m: "8", cm: "0" },
-  { id: "p12", m: "12", cm: "6" },
-  { id: "p14", m: "14", cm: "10" },
-  { id: "p16", m: "16", cm: "15" },
+  { id: "p12", m: "12", cm: "3" },
+  { id: "p14", m: "14", cm: "5" },
+  { id: "p16", m: "16", cm: "9" },
 ];
 
 export function parseNum(raw: string): number | null {

@@ -10,9 +10,9 @@ import {
 
 const defaultPts = numericPoints([
   { id: "p8", m: "8", cm: "0" },
-  { id: "p12", m: "12", cm: "6" },
-  { id: "p14", m: "14", cm: "10" },
-  { id: "p16", m: "16", cm: "15" },
+  { id: "p12", m: "12", cm: "3" },
+  { id: "p14", m: "14", cm: "5" },
+  { id: "p16", m: "16", cm: "9" },
 ]);
 
 describe("parseNum", () => {
@@ -30,21 +30,21 @@ describe("sagAt", () => {
     expect(sagAt(7, defaultPts).s).toBe(0);
     expect(sagAt(8, defaultPts).s).toBe(0);
   });
-  it("12 м — 6 см", () => {
-    expect(sagAt(12, defaultPts).s).toBe(6);
+  it("12 м — 3 см", () => {
+    expect(sagAt(12, defaultPts).s).toBe(3);
   });
-  it("14 м — 10 см", () => {
-    expect(sagAt(14, defaultPts).s).toBe(10);
+  it("14 м — 5 см", () => {
+    expect(sagAt(14, defaultPts).s).toBe(5);
   });
-  it("16 м — 15 см", () => {
-    expect(sagAt(16, defaultPts).s).toBe(15);
+  it("16 м — 9 см", () => {
+    expect(sagAt(16, defaultPts).s).toBe(9);
   });
   it("10 м — середина 8…12", () => {
-    expect(sagAt(10, defaultPts).s).toBeCloseTo(3);
+    expect(sagAt(10, defaultPts).s).toBeCloseTo(1.5);
   });
   it("дальше последней точки не экстраполирует", () => {
     const hit = sagAt(20, defaultPts);
-    expect(hit.s).toBe(15);
+    expect(hit.s).toBe(9);
     expect(hit.beyond).toBe(true);
   });
 });
@@ -65,18 +65,18 @@ describe("computeDrill", () => {
   it("по длине: h = ha − hb − sa + sb, b=8 м без провиса", () => {
     const r = computeDrill({ ...base, mode: "length" });
     expect(r.ok).toBe(true);
-    expect(r.s).toBe(6);
+    expect(r.s).toBe(3);
     expect(r.sb).toBe(0);
-    expect(r.h).toBe(9);
-    expect(r.alphaDeg).toBeCloseTo((Math.atan(0.09 / 8) * 180) / Math.PI);
-    expect(r.cmPerM).toBeCloseTo(1.125);
+    expect(r.h).toBe(12);
+    expect(r.alphaDeg).toBeCloseTo((Math.atan(0.12 / 8) * 180) / Math.PI);
+    expect(r.cmPerM).toBeCloseTo(1.5);
     expect(r.dir).toBe("вверх");
   });
 
   it("провис b компенсирует провис a при равной длине", () => {
     const r = computeDrill({ ...base, mode: "length", bM: 12 });
-    expect(r.s).toBe(6);
-    expect(r.sb).toBe(6);
+    expect(r.s).toBe(3);
+    expect(r.sb).toBe(3);
     expect(r.h).toBe(15);
   });
 

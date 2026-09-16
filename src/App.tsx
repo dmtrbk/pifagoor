@@ -14,7 +14,7 @@ import {
   type SagPoint,
 } from "./calc";
 
-const ARC_KEY = "pifagoor-arc-v2";
+const ARC_KEY = "pifagoor-arc-v3";
 
 function loadArc(): SagPoint[] {
   try {
@@ -147,7 +147,7 @@ export default function App() {
   return (
     <div className="app">
       <header className="top">
-        <h1>Drill Angle</h1>
+        <h1>Driller Machine Master</h1>
         <div className="pills" role="tablist">
           <button
             type="button"
@@ -432,6 +432,7 @@ export default function App() {
           </section>
         </div>
       )}
+      <p className="copy">© DMM</p>
     </div>
   );
 }

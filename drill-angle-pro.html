@@ -4,7 +4,11 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="theme-color" content="#e8e2d2" />
-    <title>Drill Angle</title>
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="DMM" />
+    <link rel="manifest" href="manifest.json" />
+    <title>Driller Machine Master</title>
     <style>
       :root {
         --bg: #e8e2d2;
@@ -93,12 +97,19 @@
       .chart-caption { margin: 0.4rem 0 0; font-size: 0.8rem; color: var(--muted); }
       .stack { display: flex; flex-direction: column; gap: 0.85rem; }
       .hidden { display: none; }
+      .copy {
+        margin: 1.6rem 0 0;
+        text-align: center;
+        font-size: 0.78rem;
+        letter-spacing: 0.08em;
+        color: var(--muted);
+      }
     </style>
   </head>
   <body>
     <div class="app">
       <header class="top">
-        <h1>Drill Angle</h1>
+        <h1>Driller Machine Master</h1>
         <p class="how">
           1) Впишите длины и высоты шпуров a и b.<br />
           2) Выберите, как считать провис.<br />
@@ -209,15 +220,16 @@
           </div>
         </section>
       </div>
+      <p class="copy">© DMM</p>
     </div>
 
     <script>
-      const ARC_KEY = "pifagoor-arc-v2";
+      const ARC_KEY = "pifagoor-arc-v3";
       const DEFAULT_ARC = [
         { id: "p8", m: "8", cm: "0" },
-        { id: "p12", m: "12", cm: "6" },
-        { id: "p14", m: "14", cm: "10" },
-        { id: "p16", m: "16", cm: "15" },
+        { id: "p12", m: "12", cm: "3" },
+        { id: "p14", m: "14", cm: "5" },
+        { id: "p16", m: "16", cm: "9" },
       ];
 
       const state = {
@@ -510,6 +522,9 @@
       });
 
       renderResult();
+      if ("serviceWorker" in navigator) {
+        navigator.serviceWorker.register("sw.js").catch(function () {});
+      }
     </script>
   </body>
 </html>
