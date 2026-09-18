@@ -215,7 +215,7 @@ export function computeDrill(input: DrillInput): DrillResult {
     alphaDeg > 0.05 ? "вверх" : alphaDeg < -0.05 ? "вниз" : "горизонт";
   const bNote =
     sagB.s > 0.05
-      ? ` Провис b ${sagB.s.toFixed(1)} см вниз — целимся выше.`
+      ? ` Провис b ${sagB.s.toFixed(1)} см вниз — в h уже +${sagB.s.toFixed(1)} см.`
       : "";
 
   return {
@@ -246,4 +246,17 @@ export function formatSigned(n: number, digits: number): string {
   const t = n.toFixed(digits);
   if (n > 0) return `+${t}`;
   return t;
+}
+
+/** Угол/см на метр для станка: без лишнего минуса, направление словом. */
+export function formatDirected(
+  n: number,
+  digits: number,
+  dir: "вверх" | "вниз" | "горизонт",
+  unit: "°" | " см",
+): string {
+  if (dir === "горизонт" || Math.abs(n) < 0.05) {
+    return unit === "°" ? "0.0° горизонт" : "0 см";
+  }
+  return `${Math.abs(n).toFixed(digits)}${unit} ${dir}`;
 }

@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   computeDrill,
+  formatDirected,
   numericPoints,
   parseNum,
   sagAt,
@@ -117,6 +118,15 @@ describe("numericPoints", () => {
       { m: 8, cm: 0 },
       { m: 14, cm: 10 },
     ]);
+  });
+});
+
+describe("formatDirected", () => {
+  it("без минуса — направление словом", () => {
+    expect(formatDirected(-0.64, 1, "вниз", "°")).toBe("0.6° вниз");
+    expect(formatDirected(-1.125, 1, "вниз", " см")).toBe("1.1 см вниз");
+    expect(formatDirected(0.5, 1, "вверх", "°")).toBe("0.5° вверх");
+    expect(formatDirected(0, 1, "горизонт", "°")).toBe("0.0° горизонт");
   });
 });
 

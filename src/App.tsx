@@ -2,8 +2,8 @@ import { useEffect, useMemo, useState } from "react";
 import {
   computeDrill,
   DEFAULT_ARC,
+  formatDirected,
   formatSagCm,
-  formatSigned,
   newPointId,
   numericPoints,
   parseNum,
@@ -238,7 +238,7 @@ export default function App() {
             </div>
             {mode === "length" ? (
               <p className="note">
-                Провис a и b с одной дуги. Из‑за провиса b целимся выше.
+                Провис a и b с одной дуги. Провис b входит в формулу как +sb.
               </p>
             ) : null}
             {mode === "ideal" ? (
@@ -322,15 +322,15 @@ export default function App() {
                 </div>
                 <p className="result-angle">
                   {result.ok && result.alphaDeg !== null && result.dir
-                    ? `${formatSigned(result.alphaDeg, 1)}° ${result.dir}`
+                    ? formatDirected(result.alphaDeg, 1, result.dir, "°")
                     : "—"}
                 </p>
                 <dl className="stats">
                   <div className="stat">
                     <dt>на 1 м шпура b</dt>
                     <dd>
-                      {result.ok && result.cmPerM !== null
-                        ? `${formatSigned(result.cmPerM, 1)} см`
+                      {result.ok && result.cmPerM !== null && result.dir
+                        ? formatDirected(result.cmPerM, 1, result.dir, " см")
                         : "—"}
                     </dd>
                   </div>

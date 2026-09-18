@@ -310,9 +310,11 @@
         return Math.abs(s).toFixed(1) + " см " + (s > 0 ? "вниз" : "вверх");
       }
 
-      function formatSigned(n, digits) {
-        const t = n.toFixed(digits);
-        return n > 0 ? "+" + t : t;
+      function formatDirected(n, digits, dir, unit) {
+        if (dir === "горизонт" || Math.abs(n) < 0.05) {
+          return unit === "°" ? "0.0° горизонт" : "0 см";
+        }
+        return Math.abs(n).toFixed(digits) + unit + " " + dir;
       }
 
       function compute() {
@@ -338,7 +340,7 @@
         const alphaDeg = (Math.atan(h / 100 / bM) * 180) / Math.PI;
         const cmPerM = h / bM;
         const dir = alphaDeg > 0.05 ? "вверх" : alphaDeg < -0.05 ? "вниз" : "горизонт";
-        const bNote = sb > 0.05 ? " Провис b " + sb.toFixed(1) + " см вниз — целимся выше." : "";
+        const bNote = sb > 0.05 ? " Провис b " + sb.toFixed(1) + " см вниз — в h уже +" + sb.toFixed(1) + " см." : "";
         return { ok: true, s: sag.s, sb: sb, h: h, alphaDeg: alphaDeg, cmPerM: cmPerM, dir: dir, note: sag.note + bNote, beyond: sag.beyond, beyondB: beyondB, lastM: lastM, haCm: haCm, hbCm: hbCm };
       }
 
@@ -482,17 +484,17 @@
       function renderResult() {
         const r = compute();
         $("mode-hint").textContent =
-          state.mode === "length" ? "Провис a и b с одной дуги. Из‑за провиса b целимся выше."
+          state.mode === "length" ? "Провис a и b с одной дуги. Провис b входит в формулу как +sb."
           : state.mode === "ideal" ? "Без провиса a и b. Только h = ha − hb."
-          : "Уход a — глазом. Провис b — по дуге длины b, целимся выше.";
+          : "Уход a — глазом. Провис b — по дуге длины b, в формуле +sb.";
         $("eye-box").classList.toggle("hidden", state.mode !== "eye");
         const hiddenEye = state.mode === "eye" && state.eye === "hidden";
         $("eye-cm-box").classList.toggle("hidden", !hiddenEye);
         $("eye-gone-box").classList.toggle("hidden", !hiddenEye);
         $("h-label").textContent = state.mode === "ideal" ? "h = ha − hb" : "h = ha − hb − sa + sb";
         $("s-label").textContent = state.mode === "eye" ? "уход a" : "провис a";
-        $("angle").textContent = r.ok ? formatSigned(r.alphaDeg, 1) + "° " + r.dir : "—";
-        $("cpm").textContent = r.ok ? formatSigned(r.cmPerM, 1) + " см" : "—";
+        $("angle").textContent = r.ok ? formatDirected(r.alphaDeg, 1, r.dir, "°") : "—";
+        $("cpm").textContent = r.ok ? formatDirected(r.cmPerM, 1, r.dir, " см") : "—";
         $("h").textContent = r.ok ? r.h.toFixed(1) + " см" : "—";
         $("s").textContent = formatSagCm(r.s);
         $("sb").textContent = formatSagCm(r.sb);
