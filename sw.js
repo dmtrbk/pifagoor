@@ -1,4 +1,4 @@
-const CACHE = "dmm-v4";
+const CACHE = "dmm-v5";
 const ASSETS = ["./", "./index.html", "./drill-angle-pro.html", "./manifest.json"];
 
 self.addEventListener("install", (event) => {
