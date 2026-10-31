@@ -139,6 +139,8 @@ export function sagForMode(args: {
 export type DrillInput = {
   aM: number | null;
   haCm: number | null;
+  /** Угол шпура a от горизонта, градусы: вверх плюс, вниз минус. */
+  alphaADeg: number | null;
   bM: number | null;
   hbCm: number | null;
   mode: SagMode;
@@ -152,6 +154,8 @@ export type DrillResult = {
   ok: boolean;
   s: number;
   sb: number;
+  /** Вертикальный вклад угла a на длине a, см (вверх плюс). */
+  daCm: number;
   h: number | null;
   alphaDeg: number | null;
   cmPerM: number | null;
@@ -160,6 +164,11 @@ export type DrillResult = {
   beyond: boolean;
   beyondB: boolean;
 };
+
+/** Подъём/спуск конца шпура a из-за его угла, см. Вверх плюс. */
+export function angleLiftCm(lengthM: number, alphaDeg: number): number {
+  return lengthM * 100 * Math.tan((alphaDeg * Math.PI) / 180);
+}
 
 function sagOfB(
   mode: SagMode,
@@ -183,11 +192,15 @@ export function computeDrill(input: DrillInput): DrillResult {
     gone: input.gone,
   });
   const sagB = sagOfB(input.mode, input.bM, input.pts);
+  const alphaA = input.alphaADeg ?? 0;
+  const daCm =
+    input.aM !== null ? angleLiftCm(input.aM, alphaA) : 0;
 
   const ready =
     sag.ready &&
     input.aM !== null &&
     input.haCm !== null &&
+    input.alphaADeg !== null &&
     input.bM !== null &&
     input.hbCm !== null &&
     input.aM >= 0 &&
@@ -198,6 +211,7 @@ export function computeDrill(input: DrillInput): DrillResult {
       ok: false,
       s: sag.s,
       sb: sagB.s,
+      daCm,
       h: null,
       alphaDeg: null,
       cmPerM: null,
@@ -208,25 +222,23 @@ export function computeDrill(input: DrillInput): DrillResult {
     };
   }
 
-  const h = input.haCm! - input.hbCm! - sag.s + sagB.s;
+  // Конец a: ha + a·tg(αa) − sa. Целимся концом b: hb + b·tg(αb) − sb.
+  const h = input.haCm! - input.hbCm! - sag.s + sagB.s + daCm;
   const alphaDeg = (Math.atan(h / 100 / input.bM!) * 180) / Math.PI;
   const cmPerM = h / input.bM!;
   const dir: DrillResult["dir"] =
     alphaDeg > 0.05 ? "вверх" : alphaDeg < -0.05 ? "вниз" : "горизонт";
-  const bNote =
-    sagB.s > 0.05
-      ? ` Провис b ${sagB.s.toFixed(1)} см вниз — в h уже +${sagB.s.toFixed(1)} см.`
-      : "";
 
   return {
     ok: true,
     s: sag.s,
     sb: sagB.s,
+    daCm,
     h,
     alphaDeg,
     cmPerM,
     dir,
-    note: sag.note + bNote,
+    note: sag.note,
     beyond: sag.beyond,
     beyondB: sagB.beyond,
   };

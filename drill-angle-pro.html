@@ -114,7 +114,7 @@
       <header class="top">
         <h1>Driller Machine Master</h1>
         <p class="how">
-          1) Впишите длины и высоты шпуров a и b.<br />
+          1) Впишите длины, высоты и угол шпура a, затем b.<br />
           2) Выберите, как считать провис.<br />
           3) Угол снизу — его ставите на шпур <b>b</b>, чтобы попасть в <b>a</b>.
         </p>
@@ -127,7 +127,7 @@
       <div id="page-calc" class="stack">
         <div class="grid two">
           <section class="card">
-            <div class="card-head"><h2>Шпур a</h2><span class="hint">цель, обычно 0°</span></div>
+            <div class="card-head"><h2>Шпур a</h2><span class="hint">цель</span></div>
             <div class="field">
               <label for="a">Длина a, м</label>
               <input id="a" inputmode="decimal" autocomplete="off" value="12" />
@@ -136,6 +136,11 @@
               <label for="ha">Высота ha, см</label>
               <span class="hint">устье от лазера; ниже горизонта — минус</span>
               <input id="ha" inputmode="decimal" autocomplete="off" value="20" />
+            </div>
+            <div class="field">
+              <label for="alphaA">Угол a, °</label>
+              <span class="hint">как стоит a: вверх плюс, вниз минус</span>
+              <input id="alphaA" inputmode="decimal" autocomplete="off" value="0" />
             </div>
           </section>
           <section class="card">
@@ -190,9 +195,10 @@
               <p class="result-angle" id="angle">—</p>
               <dl class="stats">
                 <div class="stat"><dt>на 1 м шпура b</dt><dd id="cpm">—</dd></div>
-                <div class="stat"><dt id="h-label">h = ha − hb − sa + sb</dt><dd id="h">—</dd></div>
+                <div class="stat"><dt id="h-label">h = ha − hb − sa + sb + a·tg(αa)</dt><dd id="h">—</dd></div>
                 <div class="stat"><dt id="s-label">уход a</dt><dd id="s">—</dd></div>
                 <div class="stat"><dt>провис b</dt><dd id="sb">—</dd></div>
+                <div class="stat"><dt>a·tg(αa)</dt><dd id="da">—</dd></div>
               </dl>
               <p class="note" id="note"></p>
               <div class="callout hidden" id="warn"></div>
@@ -317,9 +323,19 @@
         return Math.abs(n).toFixed(digits) + unit + " " + dir;
       }
 
+      function formatSigned(n, digits) {
+        const t = n.toFixed(digits);
+        return n > 0 ? "+" + t : t;
+      }
+
+      function angleLiftCm(lengthM, alphaDeg) {
+        return lengthM * 100 * Math.tan((alphaDeg * Math.PI) / 180);
+      }
+
       function compute() {
         const aM = parseNum($("a").value);
         const haCm = parseNum($("ha").value);
+        const alphaADeg = parseNum($("alphaA").value);
         const bM = parseNum($("b").value);
         const hbCm = parseNum($("hb").value);
         const eyeCm = parseNum($("eyeCm").value);
@@ -331,17 +347,17 @@
           sb = hitB.s;
           beyondB = hitB.beyond;
         }
+        const daCm = aM !== null && alphaADeg !== null ? angleLiftCm(aM, alphaADeg) : 0;
         const lastM = pts.length ? pts[pts.length - 1].m : null;
-        const ok = sag.ready && aM !== null && haCm !== null && bM !== null && hbCm !== null && aM >= 0 && bM > 0;
+        const ok = sag.ready && aM !== null && haCm !== null && alphaADeg !== null && bM !== null && hbCm !== null && aM >= 0 && bM > 0;
         if (!ok) {
-          return { ok: false, s: sag.s, sb: sb, h: null, alphaDeg: null, cmPerM: null, dir: null, note: sag.note, beyond: sag.beyond, beyondB: beyondB, lastM: lastM };
+          return { ok: false, s: sag.s, sb: sb, daCm: daCm, h: null, alphaDeg: null, cmPerM: null, dir: null, note: sag.note, beyond: sag.beyond, beyondB: beyondB, lastM: lastM };
         }
-        const h = haCm - hbCm - sag.s + sb;
+        const h = haCm - hbCm - sag.s + sb + daCm;
         const alphaDeg = (Math.atan(h / 100 / bM) * 180) / Math.PI;
         const cmPerM = h / bM;
         const dir = alphaDeg > 0.05 ? "вверх" : alphaDeg < -0.05 ? "вниз" : "горизонт";
-        const bNote = sb > 0.05 ? " Провис b " + sb.toFixed(1) + " см вниз — в h уже +" + sb.toFixed(1) + " см." : "";
-        return { ok: true, s: sag.s, sb: sb, h: h, alphaDeg: alphaDeg, cmPerM: cmPerM, dir: dir, note: sag.note + bNote, beyond: sag.beyond, beyondB: beyondB, lastM: lastM, haCm: haCm, hbCm: hbCm };
+        return { ok: true, s: sag.s, sb: sb, daCm: daCm, h: h, alphaDeg: alphaDeg, cmPerM: cmPerM, dir: dir, note: sag.note, beyond: sag.beyond, beyondB: beyondB, lastM: lastM, haCm: haCm, hbCm: hbCm };
       }
 
       function $(id) { return document.getElementById(id); }
@@ -484,25 +500,28 @@
       function renderResult() {
         const r = compute();
         $("mode-hint").textContent =
-          state.mode === "length" ? "Провис a и b с одной дуги. Провис b входит в формулу как +sb."
-          : state.mode === "ideal" ? "Без провиса a и b. Только h = ha − hb."
-          : "Уход a — глазом. Провис b — по дуге длины b, в формуле +sb.";
+          state.mode === "length" ? "Провис a и b с одной дуги. В формуле −sa + sb; угол a — как +a·tg(αa)."
+          : state.mode === "ideal" ? "Без провиса a и b. h = ha − hb + a·tg(αa)."
+          : "Уход a — глазом. Провис b — по дуге длины b (−sa + sb). Угол a — +a·tg(αa).";
         $("eye-box").classList.toggle("hidden", state.mode !== "eye");
         const hiddenEye = state.mode === "eye" && state.eye === "hidden";
         $("eye-cm-box").classList.toggle("hidden", !hiddenEye);
         $("eye-gone-box").classList.toggle("hidden", !hiddenEye);
-        $("h-label").textContent = state.mode === "ideal" ? "h = ha − hb" : "h = ha − hb − sa + sb";
+        $("h-label").textContent = state.mode === "ideal"
+          ? "h = ha − hb + a·tg(αa)"
+          : "h = ha − hb − sa + sb + a·tg(αa)";
         $("s-label").textContent = state.mode === "eye" ? "уход a" : "провис a";
         $("angle").textContent = r.ok ? formatDirected(r.alphaDeg, 1, r.dir, "°") : "—";
         $("cpm").textContent = r.ok ? formatDirected(r.cmPerM, 1, r.dir, " см") : "—";
         $("h").textContent = r.ok ? r.h.toFixed(1) + " см" : "—";
         $("s").textContent = formatSagCm(r.s);
         $("sb").textContent = formatSagCm(r.sb);
+        $("da").textContent = r.ok ? formatSigned(r.daCm, 1) + " см" : "—";
         $("note").textContent = r.ok
           ? (state.mode === "ideal"
-              ? r.note + " h = " + r.haCm + " − " + r.hbCm + " = " + r.h.toFixed(1) + " см. α = arctg(h / b)."
-              : r.note + " h = " + r.haCm + " − " + r.hbCm + " − " + r.s.toFixed(1) + " + " + r.sb.toFixed(1) + " = " + r.h.toFixed(1) + " см. α = arctg(h / b).")
-          : "Нужны a, ha, b, hb и один из трёх расчётов.";
+              ? r.note + " h = " + r.haCm + " − " + r.hbCm + " + " + formatSigned(r.daCm, 1) + " = " + r.h.toFixed(1) + " см. α = arctg(h / b)."
+              : r.note + ". h = " + r.haCm + " − " + r.hbCm + " − " + r.s.toFixed(1) + " + " + r.sb.toFixed(1) + " + " + formatSigned(r.daCm, 1) + " = " + r.h.toFixed(1) + " см. α = arctg(h / b).")
+          : "Нужны a, ha, угол a, b, hb и один из трёх расчётов.";
         const warn = $("warn");
         let msg = "";
         if (state.mode !== "ideal" && (r.beyond || r.beyondB) && r.lastM !== null) {
@@ -528,7 +547,7 @@
 
       $("tab-calc").addEventListener("click", () => showTab("calc"));
       $("tab-arc").addEventListener("click", () => showTab("arc"));
-      ["a", "ha", "b", "hb", "eyeCm"].forEach((id) => $(id).addEventListener("input", renderResult));
+      ["a", "ha", "alphaA", "b", "hb", "eyeCm"].forEach((id) => $(id).addEventListener("input", renderResult));
       document.querySelectorAll("[data-mode]").forEach((btn) => {
         btn.addEventListener("click", () => {
           state.mode = btn.getAttribute("data-mode");

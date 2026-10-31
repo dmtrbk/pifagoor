@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  angleLiftCm,
   computeDrill,
   formatDirected,
   numericPoints,
@@ -55,6 +56,7 @@ describe("computeDrill", () => {
   const base = {
     aM: 12,
     haCm: 20,
+    alphaADeg: 0,
     bM: 8,
     hbCm: 5,
     pts,
@@ -68,10 +70,13 @@ describe("computeDrill", () => {
     expect(r.ok).toBe(true);
     expect(r.s).toBe(3);
     expect(r.sb).toBe(0);
+    expect(r.daCm).toBe(0);
     expect(r.h).toBe(12);
     expect(r.alphaDeg).toBeCloseTo((Math.atan(0.12 / 8) * 180) / Math.PI);
     expect(r.cmPerM).toBeCloseTo(1.5);
     expect(r.dir).toBe("вверх");
+    expect(r.note).toBe("по длине: между 8 и 12 м");
+    expect(r.note).not.toMatch(/в h уже/);
   });
 
   it("провис b компенсирует провис a при равной длине", () => {
@@ -79,6 +84,37 @@ describe("computeDrill", () => {
     expect(r.s).toBe(3);
     expect(r.sb).toBe(3);
     expect(r.h).toBe(15);
+    expect(r.note).toBe("по длине: между 8 и 12 м");
+  });
+
+  it("равные 11.5 м: sa и sb гасятся, без фразы про +sb в h", () => {
+    const r = computeDrill({
+      ...base,
+      mode: "length",
+      aM: 11.5,
+      haCm: 0,
+      bM: 11.5,
+      hbCm: 25,
+    });
+    expect(r.s).toBeCloseTo(2.625);
+    expect(r.sb).toBeCloseTo(2.625);
+    expect(r.h).toBeCloseTo(-25);
+    expect(r.dir).toBe("вниз");
+    expect(r.note).toBe("по длине: между 8 и 12 м");
+    expect(r.note).not.toMatch(/Провис b|в h уже|целим/);
+  });
+
+  it("угол a вверх поднимает цель", () => {
+    const r = computeDrill({ ...base, mode: "ideal", alphaADeg: 1 });
+    const lift = angleLiftCm(12, 1);
+    expect(r.daCm).toBeCloseTo(lift);
+    expect(r.h).toBeCloseTo(15 + lift);
+  });
+
+  it("угол a вниз опускает цель", () => {
+    const r = computeDrill({ ...base, mode: "ideal", alphaADeg: -1 });
+    expect(r.h).toBeCloseTo(15 + angleLiftCm(12, -1));
+    expect(r.dir).toBe("вниз");
   });
 
   it("идеальный без провиса", () => {

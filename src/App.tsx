@@ -4,6 +4,7 @@ import {
   DEFAULT_ARC,
   formatDirected,
   formatSagCm,
+  formatSigned,
   newPointId,
   numericPoints,
   parseNum,
@@ -117,6 +118,7 @@ export default function App() {
   const [tab, setTab] = useState<"calc" | "arc">("calc");
   const [aStr, setA] = useState("12");
   const [haStr, setHa] = useState("20");
+  const [alphaAStr, setAlphaA] = useState("0");
   const [bStr, setB] = useState("8");
   const [hbStr, setHb] = useState("5");
   const [mode, setMode] = useState<SagMode>("length");
@@ -133,6 +135,7 @@ export default function App() {
   const result = computeDrill({
     aM: parseNum(aStr),
     haCm: parseNum(haStr),
+    alphaADeg: parseNum(alphaAStr),
     bM: parseNum(bStr),
     hbCm: parseNum(hbStr),
     mode,
@@ -180,7 +183,7 @@ export default function App() {
             <section className="card">
               <div className="card-head">
                 <h2>Шпур a</h2>
-                <span className="hint">цель, обычно 0°</span>
+                <span className="hint">цель</span>
               </div>
               <Field label="Длина a, м" value={aStr} onChange={setA} />
               <Field
@@ -188,6 +191,12 @@ export default function App() {
                 hint="устье от лазера; ниже горизонта — минус"
                 value={haStr}
                 onChange={setHa}
+              />
+              <Field
+                label="Угол a, °"
+                hint="как стоит a: вверх плюс, вниз минус"
+                value={alphaAStr}
+                onChange={setAlphaA}
               />
             </section>
 
@@ -238,11 +247,11 @@ export default function App() {
             </div>
             {mode === "length" ? (
               <p className="note">
-                Провис a и b с одной дуги. Провис b входит в формулу как +sb.
+                Провис a и b с одной дуги. В формуле −sa + sb; угол a — как +a·tg(αa).
               </p>
             ) : null}
             {mode === "ideal" ? (
-              <p className="note">Без провиса a и b. Только h = ha − hb.</p>
+              <p className="note">Без провиса a и b. h = ha − hb + a·tg(αa).</p>
             ) : null}
             {mode === "eye" ? (
               <div className="stack" style={{ marginTop: "0.75rem" }}>
@@ -335,7 +344,11 @@ export default function App() {
                     </dd>
                   </div>
                   <div className="stat">
-                    <dt>{mode === "ideal" ? "h = ha − hb" : "h = ha − hb − sa + sb"}</dt>
+                    <dt>
+                      {mode === "ideal"
+                        ? "h = ha − hb + a·tg(αa)"
+                        : "h = ha − hb − sa + sb + a·tg(αa)"}
+                    </dt>
                     <dd>{result.ok && result.h !== null ? `${result.h.toFixed(1)} см` : "—"}</dd>
                   </div>
                   <div className="stat">
@@ -346,11 +359,21 @@ export default function App() {
                     <dt>провис b</dt>
                     <dd>{formatSagCm(result.sb)}</dd>
                   </div>
+                  <div className="stat">
+                    <dt>a·tg(αa)</dt>
+                    <dd>
+                      {result.ok
+                        ? `${formatSigned(result.daCm, 1)} см`
+                        : "—"}
+                    </dd>
+                  </div>
                 </dl>
                 <p className="note">
                   {result.ok
-                    ? `${result.note} h = ${parseNum(haStr)} − ${parseNum(hbStr)} − ${result.s.toFixed(1)} + ${result.sb.toFixed(1)} = ${result.h?.toFixed(1)} см. α = arctg(h / b).`
-                    : "Нужны a, ha, b, hb и один из трёх расчётов."}
+                    ? mode === "ideal"
+                      ? `${result.note} h = ${parseNum(haStr)} − ${parseNum(hbStr)} + ${formatSigned(result.daCm, 1)} = ${result.h?.toFixed(1)} см. α = arctg(h / b).`
+                      : `${result.note}. h = ${parseNum(haStr)} − ${parseNum(hbStr)} − ${result.s.toFixed(1)} + ${result.sb.toFixed(1)} + ${formatSigned(result.daCm, 1)} = ${result.h?.toFixed(1)} см. α = arctg(h / b).`
+                    : "Нужны a, ha, угол a, b, hb и один из трёх расчётов."}
                 </p>
                 {mode !== "ideal" && (result.beyond || result.beyondB) && lastM !== null ? (
                   <div className="callout">
